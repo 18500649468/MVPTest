@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         myApplication = (ContextApplication) getApplicationContext();
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
-        Toast.makeText(this,"222",Toast.LENGTH_SHORT).show();
+        Toast.makeText(this,"11",Toast.LENGTH_SHORT).show();
         mDrawerLayout = (DrawerLayout) findViewById(R.id.appbar2);
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.drawer_open,
                 R.string.drawer_close);
