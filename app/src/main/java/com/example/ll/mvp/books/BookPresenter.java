@@ -23,7 +23,11 @@ public class BookPresenter implements BooksContract.Presenter {
     private List<BookInfo.StoriesBean> storiesBeanlist;
     private BooksContract.View booksFragment;
 
-    public BookPresenter(BooksContract.View booksFragment) {
+    public BookPresenter() {
+    }
+
+    public BookPresenter(IDoubanService iDoubanService, BooksContract.View booksFragment) {
+        this.mIDoubanService=iDoubanService;
         this.booksFragment = booksFragment;
         booksFragment.setPresenter(this);
     }
@@ -35,7 +39,6 @@ public class BookPresenter implements BooksContract.Presenter {
 
     @Override
     public void loadBooks(boolean load) {
-        mIDoubanService= DoubanManager.creatDoubanService();
         mIDoubanService.getLatestNews().enqueue(new Callback<BookInfo>() {
             @Override
             public void onResponse(Call<BookInfo> call, Response<BookInfo> response) {
@@ -57,10 +60,7 @@ public class BookPresenter implements BooksContract.Presenter {
         });
     }
 
-    @Override
-    public void openBookDetails(Movie clickedMovie) {
 
-    }
     private void processEmptyTasks(){
         //MoviesFragment 需要提示没有数据
         booksFragment.showNoBooks();

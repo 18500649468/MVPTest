@@ -4,9 +4,11 @@ package com.example.ll.mvp.movies;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -18,6 +20,8 @@ import android.widget.ProgressBar;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import com.example.ll.mvp.BuildConfig;
+import com.example.ll.mvp.OWLoadingView;
 import com.example.ll.mvp.R;
 import com.example.ll.mvp.api.DoubanManager;
 import com.example.ll.mvp.beans.Movie;
@@ -25,26 +29,43 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
+
+
 /**
  * A simple {@link Fragment} subclass.
  */
 public class MovieFragment extends Fragment implements MoviesContract.View{
-    @BindView(R.id.tv_movie)
-    TextView mTvMovie;
+//    @BindView(R.id.tv_movie)
+//    TextView mTvMovie;
     @BindView(R.id.rcv_movie)
     RecyclerView mRcvMovie;
+    @BindView(R.id.swiprl)
+    SwipeRefreshLayout swipeRefreshLayout;
     Unbinder unbinder;
     private List<Movie> mMovieList = new ArrayList<>();
     private MovieAdapter adapter;
     private MoviesContract.Presenter moviePresenter;
     private View mNoMoiveView;
 
-
+//    private Handler mHandler = new Handler()
+//    {
+//        public void handleMessage(android.os.Message msg)
+//        {
+//            switch (msg.what)
+//            {
+//                case 1001:
+//                    swipeRefreshLayout.setRefreshing(false);
+//                    break;
+//
+//            }
+//        }
+//    };
     public MovieFragment() {
         // Required empty public constructor
     }
@@ -55,36 +76,54 @@ public class MovieFragment extends Fragment implements MoviesContract.View{
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        Log.d("tag", "onAttach MovieFragment");
-
         if (moviePresenter!=null){
             moviePresenter.start();
         }else {
             moviePresenter = new MoviePresenter(DoubanManager.creatDoubanService(),MovieFragment.this);
             moviePresenter.start();
         }
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-
         View view = inflater.inflate(R.layout.fragment_movie, container, false);
         unbinder = ButterKnife.bind(this, view);
         return view;
+    }
+    public void stopRefresh(){
+        swipeRefreshLayout.setRefreshing(false);
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                moviePresenter.pullrefresh();
+//                Observable.just("1").delay(2, TimeUnit.SECONDS)
+//                        .observeOn(AndroidSchedulers.mainThread())
+//                        .subscribeOn(Schedulers.io())
+//                        .subscribe(new Action1<String>() {
+//                    @Override
+//                    public void call(String s) {
+//                        swipeRefreshLayout.setRefreshing(false);
+//                    }
+//                });
+//                mHandler.sendEmptyMessageDelayed(1001, 2000);
+            }
+        });
         if (mRcvMovie!=null){
             mRcvMovie.setHasFixedSize(true);
-            GridLayoutManager layoutManager = new GridLayoutManager(getActivity().getApplicationContext(),2);
+            GridLayoutManager layoutManager = new GridLayoutManager(getActivity().getApplicationContext(),3);
             mRcvMovie.setLayoutManager(layoutManager);
             adapter = new MovieAdapter(getActivity(),mMovieList);
             mRcvMovie.setAdapter(adapter);
         }
+
     }
 
     @Override
@@ -98,11 +137,9 @@ public class MovieFragment extends Fragment implements MoviesContract.View{
         moviePresenter = presenter;
 
     }
-
     @Override
     public void showMovies(List<Movie> movies) {
         adapter.setData(movies);
-
     }
 
     @Override
@@ -115,9 +152,12 @@ public class MovieFragment extends Fragment implements MoviesContract.View{
     public void setLoadingIndicator(boolean active) {
         if (getView()==null)return;
         final ProgressBar progressBar = (ProgressBar) getView().findViewById(R.id.pb_loading);
+        final OWLoadingView owLoadingView= (OWLoadingView) getView().findViewById(R.id.owloadingview);
         if (active){
+            owLoadingView.startAnim();
             progressBar.setVisibility(View.VISIBLE);
         }else{
+            owLoadingView.stopAnim();
             progressBar.setVisibility(View.GONE);
         }
     }
@@ -205,5 +245,6 @@ public class MovieFragment extends Fragment implements MoviesContract.View{
             ActivityCompat.startActivity(getActivity(),intent,null);
 
         }
+
     }
 }

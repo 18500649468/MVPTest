@@ -18,6 +18,7 @@ public interface MoviesContract {
     }
     interface Presenter extends BasePresenter{
         void loadMovies(boolean forceUpdate);
+        void pullrefresh();
 //        void openMovieDetails(Movie clickedMovie);
     }
 }

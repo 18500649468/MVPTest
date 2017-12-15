@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,8 +16,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.ll.mvp.R;
+import com.example.ll.mvp.api.DoubanManager;
 import com.example.ll.mvp.beans.BookInfo;
-import com.example.ll.mvp.movies.MoviesContract;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -32,13 +33,21 @@ public class BooksFragment extends Fragment implements BooksContract.View {
     private ProgressBar progressBar;
     private List<BookInfo.StoriesBean> list = new ArrayList<>();
     private BookAdapter bookAdapter;
+
+    public BooksFragment() {
+    }
+
+    public static BooksFragment newInstance(){
+        return new BooksFragment();
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         if(bookPresenter!=null){
             bookPresenter.start();
         }else {
-            bookPresenter= new BookPresenter(BooksFragment.this);
+            bookPresenter= new BookPresenter(DoubanManager.creatDoubanService(),BooksFragment.this);
             bookPresenter.start();
         }
     }
@@ -66,17 +75,19 @@ public class BooksFragment extends Fragment implements BooksContract.View {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        if (recyclerView!=null){
-            recyclerView.setHasFixedSize(true);
-        }
-        bookAdapter=new BookAdapter(list);
-        recyclerView.setAdapter(bookAdapter);
 
     }
 
     @Override
     public void showBooks(List<BookInfo.StoriesBean> books) {
-        bookAdapter.setData(books);
+//        bookAdapter.setData(books);
+        if (recyclerView!=null){
+            recyclerView.setHasFixedSize(true);
+            GridLayoutManager layoutManager = new GridLayoutManager(getActivity().getApplicationContext(),1);
+            recyclerView.setLayoutManager(layoutManager);
+        bookAdapter=new BookAdapter(books);
+        recyclerView.setAdapter(bookAdapter);
+        }
         Log.i("books.size",books.size()+"");
 //        bookAdapter.notifyDataSetChanged();
     }
@@ -108,10 +119,10 @@ public class BooksFragment extends Fragment implements BooksContract.View {
         public BookAdapter(List<BookInfo.StoriesBean> mbooklist) {
             this.booklist = mbooklist;
         }
-        public void setData(List<BookInfo.StoriesBean> data){
-            this.booklist = data;
-            notifyDataSetChanged();
-        }
+//        public void setData(List<BookInfo.StoriesBean> data){
+//            this.booklist = data;
+//            notifyDataSetChanged();
+//        }
         @Override
         public BookViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View itemView = LayoutInflater.from(getContext()).inflate(R.layout.booklistlayout,parent,false);
@@ -151,7 +162,7 @@ public class BooksFragment extends Fragment implements BooksContract.View {
                         .into(imageView);
                 titile.setText(bookbean.getTitle());
                 Log.i("books.size","111");
-                titleid.setText(bookbean.getId());
+                titleid.setText(bookbean.getId()+"");
             }
         }
     }
